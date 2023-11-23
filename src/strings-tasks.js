@@ -20,7 +20,7 @@
  *   getStringLength(undefined) => 0
  */
 function getStringLength(value) {
-  return value.length;
+  return typeof value === 'string' ? value.length : '';
 }
 
 /**
@@ -38,7 +38,8 @@ function getStringLength(value) {
  *   isString(new String('test')) => true
  */
 function isString(value) {
-  return value === 'string' ? 'true' : 'false';
+  // syntax: object instanceof constructor (Функция-конструктор, на которую идёт проверка)
+  return typeof value === 'string' || value instanceof String;
 }
 
 /**
@@ -133,7 +134,7 @@ function removeTrailingWhitespaces(value) {
  *   repeatString('abc', -2) => ''
  */
 function repeatString(str, times) {
-  return str.repeat(times);
+  return times > 0 ? str.repeat(times) : '';
 }
 
 /**
@@ -149,7 +150,12 @@ function repeatString(str, times) {
  *   removeFirstOccurrences('ABABAB', 'BA') => 'ABAB'.
  */
 function removeFirstOccurrences(str, value) {
-  return str.replace(value);
+  // Определяем индекс value(отсчет с 0) в строке
+  const index = str.indexOf(value);
+  // "Вырезаем" value с начального индекса до индекса + длина value
+  const slicedStr = str.slice(index, index + value.length);
+  // Заменяем value на ''
+  return str.replace(slicedStr, '');
 }
 
 /**
@@ -164,8 +170,17 @@ function removeFirstOccurrences(str, value) {
  *   removeLastOccurrences('I like legends', 'end') => 'I like legs'.
  *   removeLastOccurrences('ABABAB', 'BA') => 'ABAB'.
  */
-function removeLastOccurrences(/* str, value */) {
-  throw new Error('Not implemented');
+function removeLastOccurrences(str, value) {
+  // lastIndexOf указывает на начало последнего вхождения
+  const index = str.lastIndexOf(value);
+  // Проверяем, есть ли вообще вхождение
+  if (index !== -1) {
+    // Вырезаем часть строки после последнего вхождения
+    const slicedStr = str.slice(0, index) + str.slice(index + value.length);
+    return slicedStr;
+  }
+  // Если вхождение не было найдено, возвращаем исходник
+  return str;
 }
 
 /**
@@ -180,8 +195,15 @@ function removeLastOccurrences(/* str, value */) {
  *   sumOfCodes('') => 0
  *   sumOfCodes() => 0
  */
-function sumOfCodes(/* str */) {
-  throw new Error('Not implemented');
+function sumOfCodes(str) {
+  // Проверяем, является ли вообще str строкой
+  if (typeof str !== 'string') {
+    return 0;
+  }
+  // Разбиваем строку на массив символов
+  const chars = str.split('');
+  // Вычисляем сумму кодов символов: каждый символ преобразуется в его код ASCII, и эти значения суммируются с предыдущим
+  return chars.reduce((sum, char) => sum + char.charCodeAt(0), 0);
 }
 
 /**
@@ -195,8 +217,8 @@ function sumOfCodes(/* str */) {
  *   startsWith('Hello World', 'World') => false
  *   startsWith('Hello World', 'Hello') => true
  */
-function startsWith(/* str, substr */) {
-  throw new Error('Not implemented');
+function startsWith(str, substr) {
+  return !!str.startsWith(substr);
 }
 
 /**
@@ -210,8 +232,8 @@ function startsWith(/* str, substr */) {
  *   endsWith('Hello World', 'World') => true
  *   endsWith('Hello World', 'Hello') => false
  */
-function endsWith(/* str, substr */) {
-  throw new Error('Not implemented');
+function endsWith(str, substr) {
+  return !!str.endsWith(substr);
 }
 
 /**
@@ -227,8 +249,17 @@ function endsWith(/* str, substr */) {
  *   formatTime(0, 45) => "00:45"
  *   formatTime(0, 0) => "00:00"
  */
-function formatTime(/* minutes, seconds */) {
-  throw new Error('Not implemented');
+function formatTime(minutes, seconds) {
+  // Вычисляем минуты, округляя в меньшую сторону
+  const minutesCount = Math.floor(minutes / 60);
+  const secondsCount = seconds % 60;
+
+  // Добавляем нули к минутам и секундам, если они составляют одну цифру
+  const formatMinutes = minutesCount < 10 ? `0${minutes}` : `${minutes}`;
+  const formatSeconds = secondsCount < 10 ? `0${seconds}` : `${seconds}`;
+
+  // Собираем строку в формате "mm:ss" из минут и секунд
+  return `${formatMinutes}:${formatSeconds}`;
 }
 
 /**
@@ -279,7 +310,7 @@ function orderAlphabetically(str) {
  *   containsSubstring('12345', '34') => true
  */
 function containsSubstring(str, substring) {
-  return str.includes(substring) ? 'true' : 'false';
+  return !!str.includes(substring);
 }
 
 /**
@@ -296,8 +327,12 @@ function containsSubstring(str, substring) {
  *   countVowels('aEiOu') => 5
  *   countVowels('XYZ') => 1
  */
-function countVowels(/* str */) {
-  throw new Error('Not implemented');
+function countVowels(str) {
+  const vowels = ['a', 'e', 'i', 'o', 'u', 'y', 'A', 'E', 'I', 'O', 'U', 'Y'];
+
+  // Используем метод filter для проверки: каждый символ в массиве гласных
+  const vowelArray = str.split('').filter((symbol) => vowels.includes(symbol));
+  return vowelArray.length;
 }
 
 /**
@@ -314,10 +349,10 @@ function countVowels(/* str */) {
  *   isPalindrome('No lemon, no melon') => true
  */
 function isPalindrome(str) {
-  // Приводим строку к нижнему регистру и удаляем пробелы
-  const cleanStr = str.toLowerCase().replace(/\s/g);
-  const reversedStr = cleanStr.reverse().join('');
-  return cleanStr === reversedStr ? 'true' : 'false';
+  // Приводим строку к нижнему регистру и удаляем  неалфавитные символы и подчеркивания
+  const cleanStr = str.toLowerCase().replace(/[\W_]/g, '');
+  const reversedStr = cleanStr.split('').reverse().join('');
+  return cleanStr === reversedStr;
 }
 
 /**
@@ -332,8 +367,21 @@ function isPalindrome(str) {
  *   findLongestWord('A long and winding road') => 'winding'
  *   findLongestWord('No words here') => 'words'
  */
-function findLongestWord(/* sentence */) {
-  throw new Error('Not implemented');
+function findLongestWord(sentence) {
+  // Разбиваем предложение на слова
+  const words = sentence.split(' ');
+
+  // Вводим переменную для хранения самого длинного слова
+  let longestWord = '';
+  // Перебираем слова в предложении
+  for (let i = 0; i < words.length; i += 1) {
+    const currentWord = words[i];
+    // Сравниваем длину текущего слова с длиной самого длинного слова. Если текущее слово длиннее, перезаписываем переменную longestWord
+    if (currentWord.length > longestWord.length) {
+      longestWord = currentWord;
+    }
+  }
+  return longestWord;
 }
 
 /**
@@ -347,7 +395,14 @@ function findLongestWord(/* sentence */) {
  *   reverseWords('The Quick Brown Fox') => 'ehT kciuQ nworB xoF'
  */
 function reverseWords(str) {
-  return str.split('').reverse().join('');
+  // Разбиваем строку на массив слов
+  const arrayStr = str.split(' ');
+  // Переворачиваем каждое слово в массиве
+  const reversedArray = arrayStr.map((word) => {
+    return word.split('').reverse().join('');
+  });
+  // Соединяем перевернутые слова обратно в строку
+  return reversedArray.join(' ');
 }
 
 /**
@@ -403,8 +458,9 @@ function getStringFromTemplate(firstName, lastName) {
  *   extractNameFromTemplate('Hello, John Doe!') => 'John Doe'
  *   extractNameFromTemplate('Hello, Chuck Norris!') => 'Chuck Norris'
  */
-function extractNameFromTemplate(/* value */) {
-  throw new Error('Not implemented');
+function extractNameFromTemplate(value) {
+  // Счет начинается с первой буквы
+  return value.substring(7, value.length - 1);
 }
 
 /**
@@ -418,8 +474,8 @@ function extractNameFromTemplate(/* value */) {
  *   unbracketTag('<span>') => 'span'
  *   unbracketTag('<a>') => 'a'
  */
-function unbracketTag(/* str */) {
-  throw new Error('Not implemented');
+function unbracketTag(str) {
+  return str.substring(1, str.length - 1);
 }
 
 /**
